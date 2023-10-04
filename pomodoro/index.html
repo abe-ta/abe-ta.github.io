@@ -1,0 +1,123 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .timer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .session {
+            margin-bottom: 20px;
+        }
+
+        #session-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        #time-left {
+            font-size: 48px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="timer">
+        <div class="session">
+            <h1 id="session-title">Work</h1>
+            <p id="time-left">25:00</p>
+        </div>
+        <div class="controls">
+            <button id="start-button">Start</button>
+            <button id="reset-button">Reset</button>
+        </div>
+        <!-- 追加: 音声を再生するためのaudio要素 -->
+        <audio id="audio" src="bell.mp3"></audio>
+    </div>
+
+    <script>
+        let workDuration = 25 * 60; // 25 minutes in seconds
+        let breakDuration = 5 * 60; // 5 minutes in seconds
+        let timer;
+        let isWorking = true;
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay(time) {
+            document.getElementById('time-left').textContent = formatTime(time);
+        }
+
+        function toggleSession() {
+            isWorking = !isWorking;
+            document.getElementById('session-title').textContent = isWorking ? 'Work' : 'Break';
+            const duration = isWorking ? workDuration : breakDuration;
+            updateTimerDisplay(duration);
+        }
+
+        function startTimer() {
+            if (!timer) {
+                toggleSession();
+                timer = setInterval(() => {
+                    if (workDuration === 0 && breakDuration === 0) {
+                        clearInterval(timer);
+                        timer = null;
+                        return;
+                    }
+                    const remainingTime = isWorking ? workDuration : breakDuration;
+                    updateTimerDisplay(remainingTime);
+                    if (remainingTime === 0) {
+                        toggleSession();
+                        // 追加: セッションが終了したら音を鳴らす
+                        document.getElementById('audio').play();
+                    }
+                    if (isWorking) {
+                        workDuration--;
+                    } else {
+                        breakDuration--;
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timer);
+            timer = null;
+            workDuration = 25 * 60;
+            breakDuration = 5 * 60;
+            updateTimerDisplay(workDuration);
+            document.getElementById('session-title').textContent = 'Work';
+        }
+
+        document.getElementById('start-button').addEventListener('click', startTimer);
+        document.getElementById('reset-button').addEventListener('click', resetTimer);
+
+        updateTimerDisplay(workDuration);
+    </script>
+</body>
+</html>
